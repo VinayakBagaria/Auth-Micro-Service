@@ -1,8 +1,9 @@
 package validators
 
 import (
+	"errors"
+
 	"github.com/VinayakBagaria/auth-micro-service/pb"
-	"google.golang.org/protobuf/internal/errors"
 	"gopkg.in/mgo.v2/bson"
 )
 
