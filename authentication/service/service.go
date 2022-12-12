@@ -9,6 +9,7 @@ import (
 	"github.com/VinayakBagaria/auth-micro-service/authentication/repository"
 	"github.com/VinayakBagaria/auth-micro-service/authentication/validators"
 	"github.com/VinayakBagaria/auth-micro-service/pb"
+	"github.com/VinayakBagaria/auth-micro-service/security"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -26,8 +27,15 @@ func (s *authService) SignUp(ctx context.Context, req *pb.User) (*pb.User, error
 	if err != nil {
 		return nil, err
 	}
+
+	req.Password, err = security.EncrytPassword(req.Password)
+	if err != nil {
+		return nil, err
+	}
+
 	req.Name = strings.TrimSpace(req.Name)
 	req.Email = validators.NormalizeEmail(req.Email)
+
 	found, err := s.usersRepository.GetByEmail(req.Email)
 	if err == mgo.ErrNotFound {
 		user := new(models.User)
