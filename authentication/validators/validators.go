@@ -2,6 +2,7 @@ package validators
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/VinayakBagaria/auth-micro-service/pb"
 	"gopkg.in/mgo.v2/bson"
@@ -29,4 +30,8 @@ func ValidateSignUp(user *pb.User) error {
 		return ErrEmptyPassword
 	}
 	return nil
+}
+
+func NormalizeEmail(email string) string {
+	return strings.TrimSpace(strings.ToLower(email))
 }
