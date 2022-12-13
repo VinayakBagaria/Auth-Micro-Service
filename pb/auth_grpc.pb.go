@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.21.11
-// source: auth.proto
+// source: messages/auth.proto
 
 package pb
 
@@ -23,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthServiceClient interface {
 	SignUp(ctx context.Context, in *User, opts ...grpc.CallOption) (*User, error)
+	SignIn(ctx context.Context, in *SignInRequest, opts ...grpc.CallOption) (*SignInResponse, error)
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*User, error)
 	ListUsers(ctx context.Context, in *ListUsersRequest, opts ...grpc.CallOption) (AuthService_ListUsersClient, error)
 	UpdateUser(ctx context.Context, in *User, opts ...grpc.CallOption) (*User, error)
@@ -40,6 +41,15 @@ func NewAuthServiceClient(cc grpc.ClientConnInterface) AuthServiceClient {
 func (c *authServiceClient) SignUp(ctx context.Context, in *User, opts ...grpc.CallOption) (*User, error) {
 	out := new(User)
 	err := c.cc.Invoke(ctx, "/pb.AuthService/SignUp", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) SignIn(ctx context.Context, in *SignInRequest, opts ...grpc.CallOption) (*SignInResponse, error) {
+	out := new(SignInResponse)
+	err := c.cc.Invoke(ctx, "/pb.AuthService/SignIn", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -110,10 +120,12 @@ func (c *authServiceClient) DeleteUser(ctx context.Context, in *GetUserRequest, 
 // for forward compatibility
 type AuthServiceServer interface {
 	SignUp(context.Context, *User) (*User, error)
+	SignIn(context.Context, *SignInRequest) (*SignInResponse, error)
 	GetUser(context.Context, *GetUserRequest) (*User, error)
 	ListUsers(*ListUsersRequest, AuthService_ListUsersServer) error
 	UpdateUser(context.Context, *User) (*User, error)
 	DeleteUser(context.Context, *GetUserRequest) (*DeleteUserResponse, error)
+	mustEmbedUnimplementedAuthServiceServer()
 }
 
 // UnimplementedAuthServiceServer must be embedded to have forward compatible implementations.
@@ -122,6 +134,9 @@ type UnimplementedAuthServiceServer struct {
 
 func (UnimplementedAuthServiceServer) SignUp(context.Context, *User) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SignUp not implemented")
+}
+func (UnimplementedAuthServiceServer) SignIn(context.Context, *SignInRequest) (*SignInResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SignIn not implemented")
 }
 func (UnimplementedAuthServiceServer) GetUser(context.Context, *GetUserRequest) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUser not implemented")
@@ -135,11 +150,13 @@ func (UnimplementedAuthServiceServer) UpdateUser(context.Context, *User) (*User,
 func (UnimplementedAuthServiceServer) DeleteUser(context.Context, *GetUserRequest) (*DeleteUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
 }
+func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 
 // UnsafeAuthServiceServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to AuthServiceServer will
 // result in compilation errors.
 type UnsafeAuthServiceServer interface {
+	mustEmbedUnimplementedAuthServiceServer()
 }
 
 func RegisterAuthServiceServer(s grpc.ServiceRegistrar, srv AuthServiceServer) {
@@ -160,6 +177,24 @@ func _AuthService_SignUp_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthServiceServer).SignUp(ctx, req.(*User))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_SignIn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SignInRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).SignIn(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.AuthService/SignIn",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).SignIn(ctx, req.(*SignInRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -251,6 +286,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AuthService_SignUp_Handler,
 		},
 		{
+			MethodName: "SignIn",
+			Handler:    _AuthService_SignIn_Handler,
+		},
+		{
 			MethodName: "GetUser",
 			Handler:    _AuthService_GetUser_Handler,
 		},
@@ -270,5 +309,5 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "auth.proto",
+	Metadata: "messages/auth.proto",
 }
