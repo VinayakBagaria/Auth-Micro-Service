@@ -50,6 +50,7 @@ func (s *authService) SignUp(ctx context.Context, req *pb.User) (*pb.User, error
 	if found == nil {
 		return nil, err
 	}
+
 	return nil, validators.ErrEmailAlreadyExists
 }
 
@@ -81,10 +82,12 @@ func (s *authService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 	if !bson.IsObjectIdHex(req.Id) {
 		return nil, validators.ErrInvalidUserId
 	}
+
 	found, err := s.usersRepository.GetById(req.Id)
 	if err != nil {
 		return nil, err
 	}
+
 	return found.ToProtoBuffer(), nil
 }
 
@@ -93,12 +96,14 @@ func (s *authService) ListUsers(req *pb.ListUsersRequest, stream pb.AuthService_
 	if err != nil {
 		return err
 	}
+
 	for _, user := range users {
 		err := stream.Send(user.ToProtoBuffer())
 		if err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -106,10 +111,12 @@ func (s *authService) UpdateUser(ctx context.Context, req *pb.User) (*pb.User, e
 	if !bson.IsObjectIdHex(req.Id) {
 		return nil, validators.ErrInvalidUserId
 	}
+
 	user, err := s.usersRepository.GetById(req.Id)
 	if err != nil {
 		return nil, err
 	}
+
 	req.Name = strings.TrimSpace(req.Name)
 	if req.Name == "" {
 		return nil, validators.ErrEmptyName
@@ -117,6 +124,7 @@ func (s *authService) UpdateUser(ctx context.Context, req *pb.User) (*pb.User, e
 	if req.Name == user.Name {
 		return user.ToProtoBuffer(), nil
 	}
+
 	user.Name = req.Name
 	user.Updated = time.Now()
 	err = s.usersRepository.Update(user)
@@ -127,9 +135,11 @@ func (s *authService) DeleteUser(ctx context.Context, req *pb.GetUserRequest) (*
 	if !bson.IsObjectIdHex(req.Id) {
 		return nil, validators.ErrInvalidUserId
 	}
+
 	err := s.usersRepository.Delete(req.Id)
 	if err != nil {
 		return nil, err
 	}
+
 	return &pb.DeleteUserResponse{Id: req.Id}, nil
 }
