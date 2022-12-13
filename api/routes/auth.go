@@ -9,6 +9,7 @@ import (
 func NewAuthRoutes(authHandlers resthandlers.AuthHandlers) []*Route {
 	return []*Route{
 		{Path: "/signup", Method: http.MethodPost, Handler: authHandlers.SignUp},
+		{Path: "/signin", Method: http.MethodPost, Handler: authHandlers.SignIn},
 		{Path: "/user/{id}", Method: http.MethodPut, Handler: authHandlers.PutUser},
 		{Path: "/user/{id}", Method: http.MethodGet, Handler: authHandlers.GetUser},
 		{Path: "/users", Method: http.MethodGet, Handler: authHandlers.GetUsers},

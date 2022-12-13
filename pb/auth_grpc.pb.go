@@ -125,7 +125,6 @@ type AuthServiceServer interface {
 	ListUsers(*ListUsersRequest, AuthService_ListUsersServer) error
 	UpdateUser(context.Context, *User) (*User, error)
 	DeleteUser(context.Context, *GetUserRequest) (*DeleteUserResponse, error)
-	mustEmbedUnimplementedAuthServiceServer()
 }
 
 // UnimplementedAuthServiceServer must be embedded to have forward compatible implementations.
@@ -150,13 +149,12 @@ func (UnimplementedAuthServiceServer) UpdateUser(context.Context, *User) (*User,
 func (UnimplementedAuthServiceServer) DeleteUser(context.Context, *GetUserRequest) (*DeleteUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
 }
-func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 
 // UnsafeAuthServiceServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to AuthServiceServer will
 // result in compilation errors.
 type UnsafeAuthServiceServer interface {
-	mustEmbedUnimplementedAuthServiceServer()
+	
 }
 
 func RegisterAuthServiceServer(s grpc.ServiceRegistrar, srv AuthServiceServer) {
