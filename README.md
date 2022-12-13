@@ -14,7 +14,9 @@ db.createUser({ user: 'user', pwd: 'password', roles: [{role: 'readWrite', db: '
 
 
 ```
-protoc -I=./messages --go_out=. ./messages/*.proto
+protoc --go_out=. --go_opt=paths=source_relative \
+    --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+    messages/auth.proto
 
-protoc -I=./messages --go-grpc_out=. ./messages/*.proto
+mv messages/*.pb.go pb
 ```
