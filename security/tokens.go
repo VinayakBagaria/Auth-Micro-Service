@@ -3,17 +3,26 @@ package security
 import (
 	"errors"
 	"fmt"
+	"log"
+	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 )
 
 var (
-	jwtSecretKey = []byte(os.Getenv("JWT_SECRET_KEY"))
-
 	ErrInvalidToken = errors.New("invalid jwt")
+
+	jwtSecretKey = []byte(os.Getenv("JWT_SECRET_KEY"))
 )
+
+type TokenPayload struct {
+	UserId    string
+	CreatedAt time.Time
+	ExpiresAt time.Time
+}
 
 func NewToken(userId string) (string, error) {
 	claims := &jwt.StandardClaims{
@@ -26,21 +35,28 @@ func NewToken(userId string) (string, error) {
 	return token.SignedString(jwtSecretKey)
 }
 
-func parseJWTCallback(token *jwt.Token) (interface{}, error) {
+func parseJwtCallback(token *jwt.Token) (interface{}, error) {
 	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 		return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 	}
+
 	return jwtSecretKey, nil
 }
 
-func ParseToken(tokenString string) (*jwt.Token, error) {
-	return jwt.Parse(tokenString, parseJWTCallback)
+func ExtractToken(r *http.Request) (string, error) {
+	// Authorization => Bearer Token...
+	header := r.Header.Get("Authorization")
+	splitted := strings.Split(header, " ")
+	if len(splitted) != 2 {
+		log.Println("error on extract token from header:", header)
+		return "", ErrInvalidToken
+	}
+
+	return splitted[1], nil
 }
 
-type TokenPayload struct {
-	UserId    string
-	CreatedAt time.Time
-	ExpiresAt time.Time
+func ParseToken(tokenString string) (*jwt.Token, error) {
+	return jwt.Parse(tokenString, parseJwtCallback)
 }
 
 func NewTokenPayload(tokenString string) (*TokenPayload, error) {

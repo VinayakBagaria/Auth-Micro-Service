@@ -11,7 +11,6 @@ import (
 
 func TestNewToken(t *testing.T) {
 	id := bson.NewObjectId()
-
 	token, err := NewToken(id.Hex())
 	assert.NoError(t, err)
 	assert.NotEmpty(t, token)
@@ -19,7 +18,6 @@ func TestNewToken(t *testing.T) {
 
 func TestNewTokenPayload(t *testing.T) {
 	id := bson.NewObjectId()
-
 	token, err := NewToken(id.Hex())
 	assert.NoError(t, err)
 	assert.NotEmpty(t, token)

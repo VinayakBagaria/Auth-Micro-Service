@@ -9,7 +9,6 @@ import (
 
 	"github.com/VinayakBagaria/auth-micro-service/api/restutil"
 	"github.com/VinayakBagaria/auth-micro-service/pb"
-	"github.com/gorilla/mux"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -92,6 +91,12 @@ func (h *authHandlers) SignIn(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *authHandlers) PutUser(w http.ResponseWriter, r *http.Request) {
+	tokenPayload, err := restutil.AuthRequestWithId(r)
+	if err != nil {
+		restutil.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
 	if r.Body == nil {
 		restutil.WriteError(w, http.StatusBadRequest, restutil.ErrEmptyBody)
 		return
@@ -111,9 +116,7 @@ func (h *authHandlers) PutUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vars := mux.Vars(r)
-	user.Id = vars["id"]
-
+	user.Id = tokenPayload.UserId
 	resp, err := h.authSvcClient.UpdateUser(r.Context(), user)
 	if err != nil {
 		restutil.WriteError(w, http.StatusUnprocessableEntity, err)
@@ -124,9 +127,13 @@ func (h *authHandlers) PutUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *authHandlers) GetUser(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
+	tokenPayload, err := restutil.AuthRequestWithId(r)
+	if err != nil {
+		restutil.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
 
-	resp, err := h.authSvcClient.GetUser(r.Context(), &pb.GetUserRequest{Id: vars["id"]})
+	resp, err := h.authSvcClient.GetUser(r.Context(), &pb.GetUserRequest{Id: tokenPayload.UserId})
 	if err != nil {
 		restutil.WriteError(w, http.StatusBadRequest, err)
 		return
@@ -154,13 +161,18 @@ func (h *authHandlers) GetUsers(w http.ResponseWriter, r *http.Request) {
 		}
 		users = append(users, user)
 	}
+
 	restutil.WriteAsJson(w, http.StatusOK, users)
 }
 
 func (h *authHandlers) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
+	tokenPayload, err := restutil.AuthRequestWithId(r)
+	if err != nil {
+		restutil.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
 
-	resp, err := h.authSvcClient.DeleteUser(r.Context(), &pb.GetUserRequest{Id: vars["id"]})
+	resp, err := h.authSvcClient.DeleteUser(r.Context(), &pb.GetUserRequest{Id: tokenPayload.UserId})
 	if err != nil {
 		restutil.WriteError(w, http.StatusBadRequest, err)
 		return

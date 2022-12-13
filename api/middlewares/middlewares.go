@@ -3,7 +3,6 @@ package middlewares
 import (
 	"log"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/VinayakBagaria/auth-micro-service/api/restutil"
@@ -21,14 +20,12 @@ func LogRequests(next http.HandlerFunc) http.HandlerFunc {
 
 func Authenticate(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		header := r.Header.Get("Authorization")
-		splitted := strings.Split(header, " ")
-		if len(splitted) != 2 {
+		tokenString, err := security.ExtractToken(r)
+		if err != nil {
 			restutil.WriteError(w, http.StatusUnauthorized, restutil.ErrUnauthorized)
 			return
 		}
 
-		tokenString := splitted[1]
 		token, err := security.ParseToken(tokenString)
 		if err != nil || !token.Valid {
 			restutil.WriteError(w, http.StatusUnauthorized, restutil.ErrUnauthorized)
