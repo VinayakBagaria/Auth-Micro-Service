@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	ErrEmptyBody = errors.New("body can't be empty")
+	ErrEmptyBody    = errors.New("body can't be empty")
+	ErrUnauthorized = errors.New("Unauthorized")
 )
 
 type JError struct {

@@ -9,16 +9,23 @@ import (
 )
 
 type Route struct {
-	Method  string
-	Path    string
-	Handler http.HandlerFunc
+	Method       string
+	Path         string
+	Handler      http.HandlerFunc
+	AuthRequired bool
 }
 
 func Install(router *mux.Router, routeList []*Route) {
 	for _, route := range routeList {
-		router.
-			Handle(route.Path, middlewares.LogRequests(route.Handler)).
-			Methods(route.Method)
+		if route.AuthRequired {
+			router.
+				Handle(route.Path, middlewares.LogRequests(middlewares.Authenticate(route.Handler))).
+				Methods(route.Method)
+		} else {
+			router.
+				Handle(route.Path, middlewares.LogRequests(route.Handler)).
+				Methods(route.Method)
+		}
 	}
 }
 
